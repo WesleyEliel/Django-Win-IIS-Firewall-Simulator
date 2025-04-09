@@ -1,0 +1,10 @@
+.env
+*.pyc
+.idea
+.vscode
+__pycache__
+uploads/
+media/
+/venv/
+/scripts/
+*.bak

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi des Visiteurs Réseau</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media (max-width: 640px) {
+            .hidden-mobile {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div class="min-h-screen flex flex-col">
+    <!-- En-tête -->
+    <header class="bg-gradient-to-r from-primary-700 to-primary-900 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold"><i class="fas fa-network-wired mr-2"></i>Suivi des
+                        Visiteurs</h1>
+                    <p class="text-primary-200 text-xs sm:text-sm">Surveillance réseau</p>
+                </div>
+                <div class="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
+                    <div class="bg-primary-600 px-2 sm:px-3 py-1 rounded-full text-xs font-semibold">
+                        <span id="visitorCount">{{ visitors|length }}</span> Visiteurs
+                    </div>
+                    <a href="/admin"
+                       class="bg-white text-primary-700 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-100 transition whitespace-nowrap">
+                        Admin <i class="fas fa-lock ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="flex-1 container mx-auto px-2 sm:px-4 py-4">
+        <!-- Cartes de statistiques - Version mobile empilée -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4">
+            <div class="bg-white rounded-lg shadow p-3 border-l-4 border-primary-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-xs sm:text-sm">Total</p>
+                        <h3 class="text-lg sm:text-xl font-bold">{{ visitors|length }}</h3>
+                    </div>
+                    <div class="bg-primary-100 p-2 rounded-lg">
+                        <i class="fas fa-users text-primary-600 text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-3 border-l-4 border-green-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-xs sm:text-sm">Actifs</p>
+                        <h3 class="text-lg sm:text-xl font-bold">{{ active_visitors }}</h3>
+                    </div>
+                    <div class="bg-green-100 p-2 rounded-lg">
+                        <i class="fas fa-check-circle text-green-600 text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-3 border-l-4 border-red-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-xs sm:text-sm">Bloqués</p>
+                        <h3 class="text-lg sm:text-xl font-bold">{{ blocked_visitors }}</h3>
+                    </div>
+                    <div class="bg-red-100 p-2 rounded-lg">
+                        <i class="fas fa-ban text-red-600 text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-3 border-l-4 border-yellow-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-xs sm:text-sm">Aujourd'hui</p>
+                        <h3 class="text-lg sm:text-xl font-bold">{{ today_visitors }}</h3>
+                    </div>
+                    <div class="bg-yellow-100 p-2 rounded-lg">
+                        <i class="fas fa-calendar-day text-yellow-600 text-sm"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des visiteurs - Version responsive -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-3 sm:px-4 py-3 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <h2 class="text-sm sm:text-base font-semibold text-gray-800">Journal des Visiteurs</h2>
+                <div class="relative w-full sm:w-auto">
+                    <input type="text" placeholder="Rechercher..."
+                           class="w-full sm:w-64 pl-8 pr-3 py-1 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-primary-500 text-xs sm:text-sm">
+                    <i class="fas fa-search absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col"
+                            class="px-3 sm:px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            IP
+                        </th>
+                        <th scope="col"
+                            class="px-3 sm:px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden-mobile">
+                            Appareil
+                        </th>
+                        <th scope="col"
+                            class="px-3 sm:px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden-mobile">
+                            OS/Navigateur
+                        </th>
+                        <th scope="col"
+                            class="px-3 sm:px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Première Visite
+                        </th>
+                        <th scope="col"
+                            class="px-3 sm:px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden-mobile">
+                            Dernière Activité
+                        </th>
+                        <th scope="col"
+                            class="px-3 sm:px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Statut
+                        </th>
+                        <th scope="col"
+                            class="px-3 sm:px-6 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    {% for visitor in visitors %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-3 sm:px-6 py-3 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <i class="fas fa-network-wired text-primary-500 text-sm mr-1"></i>
+                                    <span class="font-mono text-xs sm:text-sm">{{ visitor.ip_address|truncatechars:10 }}</span>
+                                </div>
+                                <div class="sm:hidden text-xs text-gray-500 mt-1">
+                                    {{ visitor.device_name|default:"Inconnu" }}
+                                </div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-3 whitespace-nowrap hidden-mobile">
+                                <div class="text-xs sm:text-sm text-gray-900">{{ visitor.device_name|default:"Inconnu" }}</div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-3 whitespace-nowrap hidden-mobile">
+                                <div class="text-xs sm:text-sm text-gray-500">
+                                    <span class="block">{{ visitor.operating_system|default:"OS Inconnu"|truncatechars:10 }}</span>
+                                    <span class="text-xs text-gray-400">{{ visitor.browser|default:"Navigateur inconnu"|truncatechars:15 }}</span>
+                                </div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-3 whitespace-nowrap">
+                                <div class="text-xs sm:text-sm text-gray-500">
+                                    {{ visitor.first_visit|date:"d/m/y" }}
+                                    <span class="block text-xxs sm:text-xs text-gray-400 hidden sm:inline">{{ visitor.first_visit|time }}</span>
+                                </div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-3 whitespace-nowrap hidden-mobile">
+                                <div class="text-xs sm:text-sm text-gray-500">
+                                    {{ visitor.last_visit|date:"d/m/y" }}
+                                    <span class="block text-xxs sm:text-xs text-gray-400">{{ visitor.last_visit|time }}</span>
+                                </div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-3 whitespace-nowrap">
+                                {% if visitor.is_blocked %}
+                                    <span class="px-2 inline-flex text-xxs sm:text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        <i class="fas fa-ban mr-1"></i> <span class="hidden sm:inline">Bloqué</span>
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xxs sm:text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i> <span
+                                            class="hidden sm:inline">Actif</span>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 sm:px-6 py-3 whitespace-nowrap text-right">
+                                <div class="flex justify-end space-x-1 sm:space-x-2">
+                                    {% if user.is_superuser %}
+                                        {% if visitor.is_blocked %}
+                                            <button class="text-green-600 hover:text-green-900 text-sm"
+                                                    title="Débloquer">
+                                                <i class="fas fa-lock-open"></i>
+                                            </button>
+                                        {% else %}
+                                            <button class="text-red-600 hover:text-red-900 text-sm" title="Bloquer">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm" title="Détails">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination - Version responsive -->
+            <div class="bg-white px-3 sm:px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
+                <div class="text-xxs sm:text-xs text-gray-700">
+                    Page 1 sur {{ visitors|length }} résultats
+                </div>
+                <div class="flex space-x-1">
+                    <button class="px-2 sm:px-3 py-1 border border-gray-300 rounded text-xxs sm:text-xs bg-white text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="px-2 sm:px-3 py-1 border border-primary-500 bg-primary-50 text-primary-600 rounded text-xxs sm:text-xs">
+                        1
+                    </button>
+                    <button class="px-2 sm:px-3 py-1 border border-gray-300 rounded text-xxs sm:text-xs bg-white text-gray-700 hover:bg-gray-50">
+                        2
+                    </button>
+                    <button class="px-2 sm:px-3 py-1 border border-gray-300 rounded text-xxs sm:text-xs bg-white text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pied de page -->
+    <footer class="bg-white border-t border-gray-200">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
+                <div class="text-xxs sm:text-xs text-gray-500 mb-2 sm:mb-0">
+                    © 2023 Suivi des Visiteurs - Projet académique
+                </div>
+                <div class="flex space-x-3">
+                    <a href="#" class="text-gray-400 hover:text-gray-500 text-sm">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-gray-500 text-sm">
+                        <i class="fas fa-question-circle"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Adaptation dynamique pour mobile
+        function handleResize() {
+            // Vous pourriez ajouter des ajustements JS si nécessaire
+        }
+
+        // Écouteur pour le redimensionnement
+        window.addEventListener('resize', handleResize);
+        handleResize();
+    });
+</script>
+</body>
+</html>
