@@ -21,4 +21,7 @@ from visitors import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.visitor_list, name='visitor_list'),
+    path('block-visitor/<int:visitor_id>/', views.block_visitor, name='block_visitor'),
+    path('unblock-visitor/<int:visitor_id>/', views.unblock_visitor, name='unblock_visitor'),
+    path('delete-visitor/<int:visitor_id>/', views.delete_visitor, name='delete_visitor'),
 ]

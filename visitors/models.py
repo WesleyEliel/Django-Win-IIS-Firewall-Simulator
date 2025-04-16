@@ -18,4 +18,4 @@ class Visitor(models.Model):
     referrer = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.ip_address} - {self.device_name or 'Unknown device'}"
+        return f"{self.ip_address} - {self.device_name or 'Inconnu'}"

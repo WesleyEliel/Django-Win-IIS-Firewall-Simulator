@@ -1,6 +1,10 @@
 import subprocess
 
 
+def is_super_admin(user):
+    return user.is_authenticated and user.is_superuser
+
+
 def block_ip_in_firewall(ip_address):
     try:
         # Create a new firewall rule to block the IP
@@ -14,10 +18,10 @@ def block_ip_in_firewall(ip_address):
             'enable=yes'
         ]
         subprocess.run(command, check=True, shell=True)
-        return True
+        return True, ""
     except subprocess.CalledProcessError as exc:
         print(exc)
-        return False
+        return False, exc.__str__()
 
 
 def unblock_ip_in_firewall(ip_address):
@@ -28,7 +32,7 @@ def unblock_ip_in_firewall(ip_address):
             'name=BlockIP_{}'.format(ip_address)
         ]
         subprocess.run(command, check=True, shell=True)
-        return True
+        return True, ""
     except subprocess.CalledProcessError as exc:
         print(exc)
-        return False
+        return False, exc.__str__()

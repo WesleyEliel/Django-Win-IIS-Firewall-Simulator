@@ -11,12 +11,14 @@ from .services import block_ip_in_firewall, unblock_ip_in_firewall
 def block_ips(modeladmin, request, queryset):
     for visitor in queryset:
         if not visitor.is_blocked:
-            if block_ip_in_firewall(visitor.ip_address):
+
+            success, message = block_ip_in_firewall(visitor.ip_address)
+            if success:
                 visitor.is_blocked = True
                 visitor.save(update_fields=["is_blocked"])
                 modeladmin.message_user(request, f"Successfully blocked {visitor.ip_address}", messages.SUCCESS)
             else:
-                modeladmin.message_user(request, f"Failed to block {visitor.ip_address}", messages.ERROR)
+                modeladmin.message_user(request, f"Failed to block {visitor.ip_address} {message}", messages.ERROR)
     block_ips.short_description = "Block selected visitors (via Windows Firewall)"
 
 
@@ -24,12 +26,13 @@ def block_ips(modeladmin, request, queryset):
 def unblock_ips(modeladmin, request, queryset):
     for visitor in queryset:
         if visitor.is_blocked:
-            if unblock_ip_in_firewall(visitor.ip_address):
+            success, message = unblock_ip_in_firewall(visitor.ip_address)
+            if success:
                 visitor.is_blocked = False
                 visitor.save(update_fields=["is_blocked"])
                 modeladmin.message_user(request, f"Successfully unblocked {visitor.ip_address}", messages.SUCCESS)
             else:
-                modeladmin.message_user(request, f"Failed to unblock {visitor.ip_address}", messages.ERROR)
+                modeladmin.message_user(request, f"Failed to unblock {visitor.ip_address} | {message}", messages.ERROR)
     unblock_ips.short_description = "Unblock selected visitors (from Windows Firewall)"
 
 
