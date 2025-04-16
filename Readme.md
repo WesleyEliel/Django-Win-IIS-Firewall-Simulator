@@ -2,9 +2,9 @@
 
 ## 🌐 Table of Contents Project Context
 
-* Project context
-
 * Preview
+
+* Project context
 
 * Key Objectives
 
