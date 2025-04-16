@@ -67,7 +67,7 @@ Install-WindowsFeature Web-Server, Web-CGI, Web-Common-Http
 2. Clone repository && Install dependencies
 
 ```bash
-# 
+# Clone
 git clone git@github.com:WesleyEliel/Django-Win-IIS-Firewall-Simulator.git
 cd Django-Win-IIS-Firewall-Simulator
 
